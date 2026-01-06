@@ -1,0 +1,75 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: "<OLLAMA_API_BASE>/chat/completions"
+    body:
+      encoding: UTF-8
+      string: '{"model":"granite4","messages":[{"role":"user","content":"What''s the
+        weather in La Plata, Argentina?"}],"stream":false,"tools":[{"type":"function","function":{"name":"weather","description":"Get
+        weather information for a location","parameters":{"type":"object","properties":{"location":{"type":"string","description":"City
+        name"}},"required":["location"],"additionalProperties":false,"strict":true}}}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.0
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 06 Jan 2026 20:11:56 GMT
+      Content-Length:
+      - '440'
+    body:
+      encoding: UTF-8
+      string: '{"id":"chatcmpl-241","object":"chat.completion","created":1767730316,"model":"granite4","system_fingerprint":"fp_ollama","choices":[{"index":0,"message":{"role":"assistant","content":"","tool_calls":[{"id":"call_f44l0sr8","index":0,"type":"function","function":{"name":"weather","arguments":"{\"location\":\"La
+        Plata, Argentina\"}"}}]},"finish_reason":"tool_calls"}],"usage":{"prompt_tokens":180,"completion_tokens":24,"total_tokens":204}}
+
+        '
+  recorded_at: Tue, 06 Jan 2026 20:11:56 GMT
+- request:
+    method: post
+    uri: "<OLLAMA_API_BASE>/chat/completions"
+    body:
+      encoding: UTF-8
+      string: '{"model":"granite4","messages":[{"role":"user","content":"What''s the
+        weather in La Plata, Argentina?"},{"role":"assistant","content":"","tool_calls":[{"id":"call_f44l0sr8","type":"function","function":{"name":"weather","arguments":"{\"location\":\"La
+        Plata, Argentina\"}"}}]},{"role":"tool","content":"{temp: 35, condition: \"sunny\",
+        location: \"La Plata, Argentina\"}","tool_call_id":"call_f44l0sr8"}],"stream":false,"tools":[{"type":"function","function":{"name":"weather","description":"Get
+        weather information for a location","parameters":{"type":"object","properties":{"location":{"type":"string","description":"City
+        name"}},"required":["location"],"additionalProperties":false,"strict":true}}}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.0
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 06 Jan 2026 20:11:57 GMT
+      Content-Length:
+      - '368'
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        eyJpZCI6ImNoYXRjbXBsLTgzMiIsIm9iamVjdCI6ImNoYXQuY29tcGxldGlvbiIsImNyZWF0ZWQiOjE3Njc3MzAzMTcsIm1vZGVsIjoiZ3Jhbml0ZTQiLCJzeXN0ZW1fZmluZ2VycHJpbnQiOiJmcF9vbGxhbWEiLCJjaG9pY2VzIjpbeyJpbmRleCI6MCwibWVzc2FnZSI6eyJyb2xlIjoiYXNzaXN0YW50IiwiY29udGVudCI6IlRoZSBjdXJyZW50IHdlYXRoZXIgaW4gTGHigK9QbGF0YSwgQXJnZW50aW5hIGlzICoqMzXigK/CsEMqKiB3aXRoIHN1bm55IGNvbmRpdGlvbnMuIn0sImZpbmlzaF9yZWFzb24iOiJzdG9wIn1dLCJ1c2FnZSI6eyJwcm9tcHRfdG9rZW5zIjoyNDEsImNvbXBsZXRpb25fdG9rZW5zIjoyMywidG90YWxfdG9rZW5zIjoyNjR9fQo=
+  recorded_at: Tue, 06 Jan 2026 20:11:57 GMT
+recorded_with: VCR 6.4.0
