@@ -64,6 +64,22 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
     assert_equal "ollama", event.payload[:provider]
     assert_equal "nomic-embed-text", event.payload[:model]
     assert event.payload[:vector_count].positive?
+    assert event.payload[:dimensions].present?, "dimensions should be present"
+    assert event.payload[:dimensions].positive?, "dimensions should be positive"
+  end
+
+  test "instruments chat completion errors" do
+    VCR.use_cassette("chat_complete_error") do
+      assert_raises(StandardError) do
+        RubyLLM.chat(provider: "ollama", model: "nonexistent-model").ask("Say hello")
+      end
+    end
+
+    # Event should still be published even on error
+    event = @events.find { |e| e.name == "complete_chat.ruby_llm" }
+    assert event.present?
+    assert_equal "ollama", event.payload[:provider]
+    assert_equal "nonexistent-model", event.payload[:model]
   end
 
   test "has a version number" do
