@@ -11,7 +11,7 @@ module RubyLLM
               original_transcribe(audio_file, **kwargs).tap do |response|
                 payload[:model] = response.model
                 %i[input_tokens output_tokens duration].each do |field|
-                  value = result.public_send(field)
+                  value = response.public_send(field)
                   payload[field] = value unless value.nil?
                 end
               end
