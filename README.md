@@ -42,16 +42,17 @@ end
 
 Triggered when `#ask` is called.
 
-| Key                   | Value                             |
-| --------------------- | --------------------------------- |
-| provider              | Provider slug                     |
-| model                 | Model ID                          |
-| streaming             | Whether streaming was used        |
-| input_tokens          | Input tokens consumed             |
-| output_tokens         | Output tokens consumed            |
-| cached_tokens         | Cache reads tokens (if supported) |
-| cache_creation_tokens | Cache write tokens (if supported) |
-| tool_calls            | Number of tools called            |
+| Key                   | Value                                   |
+| --------------------- | --------------------------------------- |
+| provider              | Provider slug                           |
+| model                 | Model ID                                |
+| streaming             | Whether streaming was used              |
+| chat                  | The chat, a RubyLLM::Chat object        |
+| response              | The response, a RubyLLM::Message object |
+| input_tokens          | Input tokens consumed                   |
+| output_tokens         | Output tokens consumed                  |
+| cached_tokens         | Cache reads tokens (if supported)       |
+| cache_creation_tokens | Cache write tokens (if supported)       |
 
 #### execute_tool.ruby_llm
 
@@ -61,8 +62,10 @@ Triggered when `#execute_tool` is called.
 | --------- | --------------------------------------------------- |
 | provider  | Provider slug                                       |
 | model     | Model ID                                            |
+| tool_call | The tool call, a RubyLLM::ToolCall object           |
 | tool_name | The tool name                                       |
 | arguments | The arguments                                       |
+| chat      | The chat, a RubyLLM::Chat instance                  |
 | halted    | Indicates if the tool stopped the conversation loop |
 
 ### RubyLLM::Embedding
@@ -71,13 +74,14 @@ Triggered when `#execute_tool` is called.
 
 Triggered when `.embed` is called.
 
-| Key          | Value                          |
-| ------------ | ------------------------------ |
-| provider     | Provider slug                  |
-| model        | Model ID                       |
-| dimensions   | Number of embedding dimensions |
-| input_tokens | Input tokens consumed          |
-| vector_count | Number of vectors generated    |
+| Key          | Value                                                          |
+| ------------ | -------------------------------------------------------------- |
+| provider     | Provider slug                                                  |
+| embedding    | The embedding, a RubyLLM::Embedding object                     |
+| model        | Model ID                                                       |
+| dimensions   | Number of embedding dimensions (or array of sizes if multiple) |
+| input_tokens | Input tokens consumed                                          |
+| vector_count | Number of vectors generated                                    |
 
 ### RubyLLM::Image
 
@@ -85,11 +89,12 @@ Triggered when `.embed` is called.
 
 Triggered when `.paint` is called.
 
-| Key      | Value            |
-| -------- | ---------------- |
-| provider | Provider slug    |
-| model    | Model ID         |
-| size     | Image dimensions |
+| Key      | Value                                        |
+| -------- | -------------------------------------------- |
+| provider | Provider slug                                |
+| size     | Image dimensions                             |
+| image    | The inage generated, a RubyLLM::Image object |
+| model    | Model ID                                     |
 
 ### RubyLLM::Moderation
 
@@ -97,11 +102,12 @@ Triggered when `.paint` is called.
 
 Triggered when `.moderate` is called.
 
-| Key      | Value                        |
-| -------- | ---------------------------- |
-| provider | Provider slug                |
-| model    | Model ID                     |
-| flagged  | Whether the text was flagged |
+| Key        | Value                                        |
+| ---------- | -------------------------------------------- |
+| provider   | Provider slug                                |
+| moderation | The moderation, a RubyLLM::Moderation object |
+| model      | Model ID                                     |
+| flagged    | Whether the text was flagged                 |
 
 ### RubyLLM::Transcription
 
@@ -109,13 +115,14 @@ Triggered when `.moderate` is called.
 
 Triggered when `.transcribe` is called.
 
-| Key           | Value                                    |
-| ------------- | ---------------------------------------- |
-| provider      | Provider slug                            |
-| model         | Model ID                                 |
-| input_tokens  | Input tokens consumed                    |
-| output_tokens | Output tokens consumed                   |
-| duration      | Audio duration in seconds (if available) |
+| Key           | Value                                              |
+| ------------- | -------------------------------------------------- |
+| provider      | Provider slug                                      |
+| transcription | The transcription, a RubyLLM::Transcription object |
+| model         | Model ID                                           |
+| input_tokens  | Input tokens consumed                              |
+| output_tokens | Output tokens consumed                             |
+| duration      | Audio duration in seconds (if available)           |
 
 ## Contributing
 

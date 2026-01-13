@@ -23,6 +23,8 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
     assert_equal "ollama", event.payload[:provider]
     assert_equal "gemma3", event.payload[:model]
     assert_equal false, event.payload[:streaming]
+    assert event.payload[:chat].present?, "chat should be present"
+    assert event.payload[:response].present?, "response should be present"
     assert_equal 11, event.payload[:input_tokens]
     assert_equal 16, event.payload[:output_tokens]
   end
@@ -39,6 +41,8 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
     event = @events.first
     assert_equal "complete_chat.ruby_llm", event.name
     assert_equal true, event.payload[:streaming]
+    assert event.payload[:chat].present?, "chat should be present"
+    assert event.payload[:response].present?, "response should be present"
   end
 
   test "instruments tool execution" do
@@ -50,6 +54,8 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
     assert event.present?
     assert_equal "weather", event.payload[:tool_name]
     assert_equal({ "location" => "La Plata, Argentina" }, event.payload[:arguments])
+    assert event.payload[:tool_call].present?, "tool_call should be present"
+    assert event.payload[:chat].present?, "chat should be present"
     assert_equal false, event.payload[:halted]
   end
 
@@ -63,6 +69,7 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
     assert_equal "embed_text.ruby_llm", event.name
     assert_equal "ollama", event.payload[:provider]
     assert_equal "nomic-embed-text", event.payload[:model]
+    assert event.payload[:embedding].present?, "embedding should be present"
     assert event.payload[:vector_count].positive?
     assert event.payload[:dimensions].present?, "dimensions should be present"
     assert event.payload[:dimensions].positive?, "dimensions should be positive"
@@ -80,6 +87,7 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
     assert event.present?
     assert_equal "ollama", event.payload[:provider]
     assert_equal "nonexistent-model", event.payload[:model]
+    assert event.payload[:chat].present?, "chat should be present even on error"
   end
 
   test "has a version number" do
