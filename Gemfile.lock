@@ -316,7 +316,6 @@ PLATFORMS
 DEPENDENCIES
   debug (>= 1.0.0)
   dotenv
-  minitest (< 7)
   puma
   rubocop-rails-omakase
   ruby_llm-instrumentation!
