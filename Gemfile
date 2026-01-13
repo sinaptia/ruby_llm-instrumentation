@@ -19,4 +19,4 @@ gem "webmock"
 gem "debug", ">= 1.0.0"
 
 # due to errors in main
-gem "minitest", "< 6"
+gem "minitest", "< 7"
