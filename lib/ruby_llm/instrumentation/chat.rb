@@ -4,12 +4,15 @@ module RubyLLM
       extend ActiveSupport::Concern
 
       included do
+        attr_accessor :tags
+
         alias_method :original_complete, :complete
         def complete(&)
           raw_payload = {
             provider: @provider.slug,
             model: @model.id,
-            streaming: block_given?
+            streaming: block_given?,
+            tags: tags
           }
 
           ActiveSupport::Notifications.instrument("complete_chat.ruby_llm", raw_payload) do |payload|
@@ -32,7 +35,8 @@ module RubyLLM
             model: @model.id,
             tool_call: tool_call,
             tool_name: tool_call.name,
-            arguments: tool_call.arguments
+            arguments: tool_call.arguments,
+            tags: tags
           }
 
           ActiveSupport::Notifications.instrument("execute_tool.ruby_llm", raw_payload) do |payload|
