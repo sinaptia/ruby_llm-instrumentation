@@ -20,7 +20,26 @@ Now, RubyLLM will instrument all calls to your configured LLM.
 
 ## Usage
 
-RubyLLM::Instrumentation uses ActiveSupport::Notifications to publish events. You can subscribe to these events to build custom monitoring, logging, or analytics:
+RubyLLM::Instrumentation uses ActiveSupport::Notifications to publish events. You can subscribe to these events to build custom monitoring, logging, or analytics.
+
+### Tags
+
+You can attach custom tags to any RubyLLM call for tracking, attribution, or analytics purposes. Tags are included in the event payload and can be used to filter or group events by user, feature, or any other dimension.
+
+```ruby
+# For Chat (set on the instance)
+chat = RubyLLM.chat(model: "gpt-4")
+chat.tags = { user_id: current_user.id, feature: "chat_assistant" }
+chat.ask("Hello")
+
+# For class methods (pass as argument)
+RubyLLM::Embedding.embed("text", tags: { user_id: current_user.id, feature: "search" })
+RubyLLM::Image.paint("a cat", tags: { user_id: current_user.id, feature: "art_generator" })
+RubyLLM::Moderation.moderate("text", tags: { feature: "content_filter" })
+RubyLLM::Transcription.transcribe(file, tags: { user_id: current_user.id })
+```
+
+### Subscribing to events
 
 ```ruby
 # Subscribe to all LLM events
@@ -53,6 +72,7 @@ Triggered when `#ask` is called.
 | output_tokens         | Output tokens consumed                  |
 | cached_tokens         | Cache reads tokens (if supported)       |
 | cache_creation_tokens | Cache write tokens (if supported)       |
+| tags                  | Custom tags hash (if provided)          |
 
 #### execute_tool.ruby_llm
 
@@ -67,6 +87,7 @@ Triggered when `#execute_tool` is called.
 | arguments | The arguments                                       |
 | chat      | The chat, a RubyLLM::Chat instance                  |
 | halted    | Indicates if the tool stopped the conversation loop |
+| tags      | Custom tags hash (if provided)                      |
 
 ### RubyLLM::Embedding
 
@@ -82,6 +103,7 @@ Triggered when `.embed` is called.
 | dimensions   | Number of embedding dimensions (or array of sizes if multiple) |
 | input_tokens | Input tokens consumed                                          |
 | vector_count | Number of vectors generated                                    |
+| tags         | Custom tags hash (if provided)                                 |
 
 ### RubyLLM::Image
 
@@ -93,8 +115,9 @@ Triggered when `.paint` is called.
 | -------- | -------------------------------------------- |
 | provider | Provider slug                                |
 | size     | Image dimensions                             |
-| image    | The inage generated, a RubyLLM::Image object |
+| image    | The image generated, a RubyLLM::Image object |
 | model    | Model ID                                     |
+| tags     | Custom tags hash (if provided)               |
 
 ### RubyLLM::Moderation
 
@@ -108,6 +131,7 @@ Triggered when `.moderate` is called.
 | moderation | The moderation, a RubyLLM::Moderation object |
 | model      | Model ID                                     |
 | flagged    | Whether the text was flagged                 |
+| tags       | Custom tags hash (if provided)               |
 
 ### RubyLLM::Transcription
 
@@ -123,6 +147,7 @@ Triggered when `.transcribe` is called.
 | input_tokens  | Input tokens consumed                              |
 | output_tokens | Output tokens consumed                             |
 | duration      | Audio duration in seconds (if available)           |
+| tags          | Custom tags hash (if provided)                     |
 
 ## Contributing
 

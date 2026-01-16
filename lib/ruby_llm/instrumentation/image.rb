@@ -6,10 +6,11 @@ module RubyLLM
       included do
         class << self
           alias_method :original_paint, :paint
-          def paint(prompt, model: nil, provider: nil, assume_model_exists: false, size: "1024x1024", context: nil)
+          def paint(prompt, model: nil, provider: nil, assume_model_exists: false, size: "1024x1024", context: nil, tags: nil)
             raw_payload = {
               provider:,
-              size:
+              size:,
+              tags:
             }
 
             ActiveSupport::Notifications.instrument("paint_image.ruby_llm", raw_payload) do |payload|

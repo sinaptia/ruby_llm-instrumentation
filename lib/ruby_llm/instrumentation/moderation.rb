@@ -6,9 +6,10 @@ module RubyLLM
       included do
         class << self
           alias_method :original_moderate, :moderate
-          def moderate(input, model: nil, provider: nil, assume_model_exists: false, context: nil)
+          def moderate(input, model: nil, provider: nil, assume_model_exists: false, context: nil, tags: nil)
             raw_payload = {
-              provider:
+              provider:,
+              tags:
             }
 
             ActiveSupport::Notifications.instrument("moderate_text.ruby_llm", raw_payload) do |payload|

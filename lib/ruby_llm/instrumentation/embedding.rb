@@ -6,9 +6,10 @@ module RubyLLM
       included do
         class << self
           alias_method :original_embed, :embed
-          def embed(text, model: nil, provider: nil, assume_model_exists: false, context: nil, dimensions: nil)
+          def embed(text, model: nil, provider: nil, assume_model_exists: false, context: nil, dimensions: nil, tags: nil)
             raw_payload = {
-              provider:
+              provider:,
+              tags:
             }
 
             ActiveSupport::Notifications.instrument("embed_text.ruby_llm", raw_payload) do |payload|
