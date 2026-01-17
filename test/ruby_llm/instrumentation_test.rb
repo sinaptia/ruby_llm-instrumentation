@@ -93,4 +93,58 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
   test "has a version number" do
     assert RubyLLM::Instrumentation::VERSION
   end
+
+  test "context has metadata accessor" do
+    context = RubyLLM::Context.new(RubyLLM.config)
+    assert_respond_to context, :metadata
+    assert_equal({}, context.metadata)
+  end
+
+  test "context metadata can be set and retrieved" do
+    context = RubyLLM::Context.new(RubyLLM.config)
+    context.metadata[:user_id] = 123
+    context.metadata[:tenant] = "acme"
+
+    assert_equal 123, context.metadata[:user_id]
+    assert_equal "acme", context.metadata[:tenant]
+  end
+
+  test "context metadata persists across chat operations" do
+    context = RubyLLM::Context.new(RubyLLM.config)
+    context.metadata[:user_id] = 456
+
+    chat = RubyLLM.chat(provider: "ollama", model: "gemma3", assume_model_exists: true)
+    chat.with_context(context)
+
+    assert_equal 456, context.metadata[:user_id]
+  end
+
+  test "metadata is included in chat completion events when context is present" do
+    context = RubyLLM::Context.new(RubyLLM.config)
+    context.metadata[:user_id] = 789
+    context.metadata[:tenant] = "test-tenant"
+
+    VCR.use_cassette("chat_complete") do
+      chat = RubyLLM.chat(provider: "ollama", model: "gemma3", assume_model_exists: true)
+      chat.with_context(context)
+      chat.ask("Say hello")
+    end
+
+    assert_equal 1, @events.size
+    event = @events.first
+    assert_equal "complete_chat.ruby_llm", event.name
+    assert event.payload[:metadata].present?, "metadata should be present"
+    assert_equal 789, event.payload[:metadata][:user_id]
+    assert_equal "test-tenant", event.payload[:metadata][:tenant]
+  end
+
+  test "metadata is empty hash in events when no context is present" do
+    VCR.use_cassette("chat_complete") do
+      RubyLLM.chat(provider: "ollama", model: "gemma3", assume_model_exists: true).ask("Say hello")
+    end
+
+    assert_equal 1, @events.size
+    event = @events.first
+    assert_nil event.payload[:metadata], "metadata should not be present when no context"
+  end
 end

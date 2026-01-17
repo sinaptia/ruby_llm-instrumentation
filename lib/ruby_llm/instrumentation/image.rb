@@ -16,6 +16,7 @@ module RubyLLM
               original_paint(prompt, model:, provider:, assume_model_exists:, size:, context:).tap do |response|
                 payload[:image] = response
                 payload[:model] = response.model
+                payload[:metadata] = context.metadata if context
               end
             end
           end

@@ -20,6 +20,7 @@ module RubyLLM
                 # response.vectors is an array of floats, or an array of an array of floats
                 payload[:vector_count] = response.vectors.first.is_a?(Array) ? response.vectors.size : 1
                 payload[:dimensions] = response.vectors.first.is_a?(Array) ? response.vectors.map(&:size) : response.vectors.size
+                payload[:metadata] = context.metadata if context
               end
             end
           end

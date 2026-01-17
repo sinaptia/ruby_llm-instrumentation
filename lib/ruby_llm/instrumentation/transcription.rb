@@ -19,6 +19,7 @@ module RubyLLM
                   value = response.public_send(field)
                   payload[field] = value unless value.nil?
                 end
+                payload[:metadata] = kwargs[:context].metadata if kwargs[:context]
               end
             end
           end

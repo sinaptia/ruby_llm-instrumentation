@@ -16,6 +16,7 @@ module RubyLLM
                 payload[:moderation] = response
                 payload[:model] = response.model
                 payload[:flagged] = response.flagged?
+                payload[:metadata] = context.metadata if context
               end
             end
           end

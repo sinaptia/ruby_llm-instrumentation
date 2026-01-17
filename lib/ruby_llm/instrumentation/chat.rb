@@ -22,6 +22,7 @@ module RubyLLM
             end
           ensure
             payload[:chat] = self
+            payload[:metadata] = @context.metadata if @context
           end
         end
 
@@ -41,6 +42,7 @@ module RubyLLM
             end
           ensure
             payload[:chat] = self
+            payload[:metadata] = @context.metadata if @context
           end
         end
       end
