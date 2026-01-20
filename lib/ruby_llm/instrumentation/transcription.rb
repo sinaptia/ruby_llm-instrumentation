@@ -8,8 +8,9 @@ module RubyLLM
           alias_method :original_transcribe, :transcribe
           def transcribe(audio_file, **kwargs)
             raw_payload = {
-              provider: kwargs[:provider]
-            }
+              provider: kwargs[:provider],
+              metadata: RubyLLM::Instrumentation.current_metadata.presence
+            }.compact
 
             ActiveSupport::Notifications.instrument("transcribe_audio.ruby_llm", raw_payload) do |payload|
               original_transcribe(audio_file, **kwargs).tap do |response|

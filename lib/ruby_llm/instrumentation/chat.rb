@@ -9,8 +9,9 @@ module RubyLLM
           raw_payload = {
             provider: @provider.slug,
             model: @model.id,
-            streaming: block_given?
-          }
+            streaming: block_given?,
+            metadata: RubyLLM::Instrumentation.current_metadata.presence
+          }.compact
 
           ActiveSupport::Notifications.instrument("complete_chat.ruby_llm", raw_payload) do |payload|
             original_complete(&).tap do |response|
@@ -32,8 +33,9 @@ module RubyLLM
             model: @model.id,
             tool_call: tool_call,
             tool_name: tool_call.name,
-            arguments: tool_call.arguments
-          }
+            arguments: tool_call.arguments,
+            metadata: RubyLLM::Instrumentation.current_metadata.presence
+          }.compact
 
           ActiveSupport::Notifications.instrument("execute_tool.ruby_llm", raw_payload) do |payload|
             original_execute_tool(tool_call).tap do |response|

@@ -20,7 +20,9 @@ Now, RubyLLM will instrument all calls to your configured LLM.
 
 ## Usage
 
-RubyLLM::Instrumentation uses ActiveSupport::Notifications to publish events. You can subscribe to these events to build custom monitoring, logging, or analytics:
+RubyLLM::Instrumentation uses ActiveSupport::Notifications to publish events. You can subscribe to these events to build custom monitoring, logging, or analytics.
+
+### Subscribing to events
 
 ```ruby
 # Subscribe to all LLM events
@@ -31,6 +33,48 @@ ActiveSupport::Notifications.subscribe(/ruby_llm/) do |name, start, finish, id, 
   Rails.logger.info "Duration: #{duration}ms"
   Rails.logger.info "Input tokens: #{payload[:input_tokens]}"
   Rails.logger.info "Output tokens: #{payload[:output_tokens]}"
+  Rails.logger.info "Metadata: #{payload[:metadata]}" if payload[:metadata]
+end
+```
+
+### Metadata
+
+You can attach custom metadata to any RubyLLM call for tracking, attribution, or analytics purposes. Metadata is included in the event payload under the `metadata` key.
+
+```ruby
+# Block form - great for controller around_actions
+RubyLLM::Instrumentation.with(user_id: current_user.id, feature: "chat_assistant") do
+  RubyLLM.chat.ask("Hello")
+end
+
+# One-liners work too
+RubyLLM::Instrumentation.with(feature: "search") { RubyLLM.embed("text") }
+```
+
+The block form is particularly useful for setting request-level context:
+
+```ruby
+class ApplicationController < ActionController::Base
+  around_action :instrument_llm_calls
+
+  private
+
+  def instrument_llm_calls
+    RubyLLM::Instrumentation.with(user_id: current_user&.id, request_id: request.uuid) do
+      yield
+    end
+  end
+end
+```
+
+Nested blocks merge metadata, so you can set global context and add specific metadata per-call:
+
+```ruby
+RubyLLM::Instrumentation.with(user_id: 123) do
+  RubyLLM::Instrumentation.with(feature: "chat") do
+    RubyLLM.chat.ask("Hello")
+    # metadata: { user_id: 123, feature: "chat" }
+  end
 end
 ```
 
@@ -53,6 +97,7 @@ Triggered when `#ask` is called.
 | output_tokens         | Output tokens consumed                  |
 | cached_tokens         | Cache reads tokens (if supported)       |
 | cache_creation_tokens | Cache write tokens (if supported)       |
+| metadata              | Custom metadata hash (if provided)      |
 
 #### execute_tool.ruby_llm
 
@@ -67,6 +112,7 @@ Triggered when `#execute_tool` is called.
 | arguments | The arguments                                       |
 | chat      | The chat, a RubyLLM::Chat instance                  |
 | halted    | Indicates if the tool stopped the conversation loop |
+| metadata  | Custom metadata hash (if provided)                  |
 
 ### RubyLLM::Embedding
 
@@ -82,6 +128,7 @@ Triggered when `.embed` is called.
 | dimensions   | Number of embedding dimensions (or array of sizes if multiple) |
 | input_tokens | Input tokens consumed                                          |
 | vector_count | Number of vectors generated                                    |
+| metadata     | Custom metadata hash (if provided)                             |
 
 ### RubyLLM::Image
 
@@ -93,8 +140,9 @@ Triggered when `.paint` is called.
 | -------- | -------------------------------------------- |
 | provider | Provider slug                                |
 | size     | Image dimensions                             |
-| image    | The inage generated, a RubyLLM::Image object |
+| image    | The image generated, a RubyLLM::Image object |
 | model    | Model ID                                     |
+| metadata | Custom metadata hash (if provided)           |
 
 ### RubyLLM::Moderation
 
@@ -108,6 +156,7 @@ Triggered when `.moderate` is called.
 | moderation | The moderation, a RubyLLM::Moderation object |
 | model      | Model ID                                     |
 | flagged    | Whether the text was flagged                 |
+| metadata   | Custom metadata hash (if provided)           |
 
 ### RubyLLM::Transcription
 
@@ -123,6 +172,7 @@ Triggered when `.transcribe` is called.
 | input_tokens  | Input tokens consumed                              |
 | output_tokens | Output tokens consumed                             |
 | duration      | Audio duration in seconds (if available)           |
+| metadata      | Custom metadata hash (if provided)                 |
 
 ## Contributing
 

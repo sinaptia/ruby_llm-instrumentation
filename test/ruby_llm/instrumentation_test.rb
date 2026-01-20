@@ -29,6 +29,17 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
     assert_equal 16, event.payload[:output_tokens]
   end
 
+  test "instruments chat completion with metadata" do
+    VCR.use_cassette("chat_complete") do
+      RubyLLM::Instrumentation.with(user_id: 123, feature: "test_chat") do
+        RubyLLM.chat(provider: "ollama", model: "gemma3", assume_model_exists: true).ask("Say hello")
+      end
+    end
+
+    event = @events.first
+    assert_equal({ user_id: 123, feature: "test_chat" }, event.payload[:metadata])
+  end
+
   test "instruments chat completion with streaming" do
     chunks = []
 
@@ -59,6 +70,17 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
     assert_equal false, event.payload[:halted]
   end
 
+  test "instruments tool execution with metadata" do
+    VCR.use_cassette("execute_tool") do
+      RubyLLM::Instrumentation.with(user_id: 456, feature: "weather_lookup") do
+        RubyLLM.chat(provider: "ollama", model: "granite4", assume_model_exists: true).with_tool(WeatherTool).ask("What's the weather in La Plata, Argentina?")
+      end
+    end
+
+    event = @events.find { |e| e.name == "execute_tool.ruby_llm" }
+    assert_equal({ user_id: 456, feature: "weather_lookup" }, event.payload[:metadata])
+  end
+
   test "instruments text embedding" do
     VCR.use_cassette("embed_text") do
       RubyLLM.embed("Hello world", provider: "ollama", model: "nomic-embed-text", assume_model_exists: true)
@@ -75,6 +97,17 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
     assert event.payload[:dimensions].positive?, "dimensions should be positive"
   end
 
+  test "instruments text embedding with metadata" do
+    VCR.use_cassette("embed_text") do
+      RubyLLM::Instrumentation.with(user_id: 789, feature: "search") do
+        RubyLLM.embed("Hello world", provider: "ollama", model: "nomic-embed-text", assume_model_exists: true)
+      end
+    end
+
+    event = @events.first
+    assert_equal({ user_id: 789, feature: "search" }, event.payload[:metadata])
+  end
+
   test "instruments chat completion errors" do
     VCR.use_cassette("chat_complete_error") do
       assert_raises(StandardError) do
@@ -88,6 +121,43 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
     assert_equal "ollama", event.payload[:provider]
     assert_equal "nonexistent-model", event.payload[:model]
     assert event.payload[:chat].present?, "chat should be present even on error"
+  end
+
+  test "nested with blocks merge metadata" do
+    VCR.use_cassette("chat_complete") do
+      RubyLLM::Instrumentation.with(user_id: 123) do
+        RubyLLM::Instrumentation.with(feature: "nested_test", request_id: "abc") do
+          RubyLLM.chat(provider: "ollama", model: "gemma3", assume_model_exists: true).ask("Say hello")
+        end
+      end
+    end
+
+    event = @events.first
+    assert_equal({ user_id: 123, feature: "nested_test", request_id: "abc" }, event.payload[:metadata])
+  end
+
+  test "with block cleans up metadata after execution" do
+    VCR.use_cassette("chat_complete") do
+      RubyLLM::Instrumentation.with(user_id: 123) do
+        # metadata is set
+      end
+
+      # metadata should be cleared
+      RubyLLM.chat(provider: "ollama", model: "gemma3", assume_model_exists: true).ask("Say hello")
+    end
+
+    event = @events.first
+    assert_nil event.payload[:metadata]
+  end
+
+  test "with block cleans up metadata even on exception" do
+    assert_raises(RuntimeError) do
+      RubyLLM::Instrumentation.with(user_id: 123) do
+        raise "boom"
+      end
+    end
+
+    assert_equal({}, RubyLLM::Instrumentation.current_metadata)
   end
 
   test "has a version number" do

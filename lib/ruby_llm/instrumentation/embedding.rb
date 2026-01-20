@@ -8,8 +8,9 @@ module RubyLLM
           alias_method :original_embed, :embed
           def embed(text, model: nil, provider: nil, assume_model_exists: false, context: nil, dimensions: nil)
             raw_payload = {
-              provider:
-            }
+              provider:,
+              metadata: RubyLLM::Instrumentation.current_metadata.presence
+            }.compact
 
             ActiveSupport::Notifications.instrument("embed_text.ruby_llm", raw_payload) do |payload|
               original_embed(text, model:, provider:, assume_model_exists:, context:, dimensions:).tap do |response|
