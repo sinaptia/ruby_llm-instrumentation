@@ -22,6 +22,21 @@ Now, RubyLLM will instrument all calls to your configured LLM.
 
 RubyLLM::Instrumentation uses ActiveSupport::Notifications to publish events. You can subscribe to these events to build custom monitoring, logging, or analytics.
 
+### Subscribing to events
+
+```ruby
+# Subscribe to all LLM events
+ActiveSupport::Notifications.subscribe(/ruby_llm/) do |name, start, finish, id, payload|
+  duration = finish - start
+
+  Rails.logger.info "LLM Call: #{payload[:provider]}/#{payload[:model]}"
+  Rails.logger.info "Duration: #{duration}ms"
+  Rails.logger.info "Input tokens: #{payload[:input_tokens]}"
+  Rails.logger.info "Output tokens: #{payload[:output_tokens]}"
+  Rails.logger.info "Metadata: #{payload[:metadata]}" if payload[:metadata]
+end
+```
+
 ### Metadata
 
 You can attach custom metadata to any RubyLLM call for tracking, attribution, or analytics purposes. Metadata is included in the event payload under the `metadata` key.
@@ -60,21 +75,6 @@ RubyLLM::Instrumentation.with(user_id: 123) do
     RubyLLM.chat.ask("Hello")
     # metadata: { user_id: 123, feature: "chat" }
   end
-end
-```
-
-### Subscribing to events
-
-```ruby
-# Subscribe to all LLM events
-ActiveSupport::Notifications.subscribe(/ruby_llm/) do |name, start, finish, id, payload|
-  duration = finish - start
-
-  Rails.logger.info "LLM Call: #{payload[:provider]}/#{payload[:model]}"
-  Rails.logger.info "Duration: #{duration}ms"
-  Rails.logger.info "Input tokens: #{payload[:input_tokens]}"
-  Rails.logger.info "Output tokens: #{payload[:output_tokens]}"
-  Rails.logger.info "Metadata: #{payload[:metadata]}" if payload[:metadata]
 end
 ```
 
