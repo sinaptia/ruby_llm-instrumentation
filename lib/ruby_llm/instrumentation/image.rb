@@ -16,7 +16,7 @@ module RubyLLM
             ActiveSupport::Notifications.instrument("paint_image.ruby_llm", raw_payload) do |payload|
               original_paint(prompt, model:, provider:, assume_model_exists:, size:, context:).tap do |response|
                 payload[:image] = response
-                payload[:model] = response.model
+                payload[:model] = response.model_id
               end
             end
           end
