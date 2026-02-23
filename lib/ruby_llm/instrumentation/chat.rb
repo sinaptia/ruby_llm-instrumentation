@@ -16,7 +16,7 @@ module RubyLLM
           ActiveSupport::Notifications.instrument("complete_chat.ruby_llm", raw_payload) do |payload|
             original_complete(&).tap do |response|
               payload[:response] = response
-              %i[input_tokens output_tokens cached_tokens cache_creation_tokens].each do |field|
+              %i[input_tokens output_tokens cached_tokens cache_creation_tokens thinking_tokens].each do |field|
                 value = response.public_send(field)
                 payload[field] = value unless value.nil?
               end
