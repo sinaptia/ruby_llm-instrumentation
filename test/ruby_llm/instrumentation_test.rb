@@ -160,6 +160,22 @@ class RubyLLM::InstrumentationTest < ActiveSupport::TestCase
     assert_equal({}, RubyLLM::Instrumentation.current_metadata)
   end
 
+  test "handles Tool::Halt response without raising NoMethodError" do
+    chat = RubyLLM.chat(provider: "ollama", model: "gemma3", assume_model_exists: true)
+    halt = RubyLLM::Tool::Halt.new("stopped")
+    chat.define_singleton_method(:original_complete) { |&_block| halt }
+
+    assert_nothing_raised do
+      chat.complete
+    end
+
+    event = @events.find { |e| e.name == "complete_chat.ruby_llm" }
+    assert event.present?
+    assert_equal halt, event.payload[:response]
+    assert_nil event.payload[:input_tokens]
+    assert_nil event.payload[:output_tokens]
+  end
+
   test "has a version number" do
     assert RubyLLM::Instrumentation::VERSION
   end

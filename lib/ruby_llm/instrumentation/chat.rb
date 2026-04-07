@@ -17,6 +17,8 @@ module RubyLLM
             original_complete(&).tap do |response|
               payload[:response] = response
               %i[input_tokens output_tokens cached_tokens cache_creation_tokens thinking_tokens].each do |field|
+                next unless response.respond_to?(field)
+
                 value = response.public_send(field)
                 payload[field] = value unless value.nil?
               end
