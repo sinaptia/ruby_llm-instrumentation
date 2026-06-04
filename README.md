@@ -67,6 +67,30 @@ class ApplicationController < ActionController::Base
 end
 ```
 
+If RubyLLM is routed through an OpenAI-compatible gateway for policy, audit, routing, or cost controls, pass correlation metadata through the same block. For example, with Tuning Engines:
+
+```ruby
+# config/initializers/ruby_llm.rb
+RubyLLM.configure do |config|
+  config.openai_api_key = ENV["TUNING_ENGINES_API_KEY"]
+  config.openai_api_base = "https://api.tuningengines.com/v1"
+end
+
+RubyLLM::Instrumentation.with(
+  request_id: request.uuid,
+  feature: "support_assistant",
+  cost_center: "support"
+) do
+  RubyLLM.chat(
+    model: "support-triage-fast",
+    provider: :openai,
+    assume_model_exists: true
+  ).ask("Summarize this ticket")
+end
+```
+
+The Rails application keeps its local instrumentation events, while the gateway can use the same request context for centralized controls and reporting.
+
 Nested blocks merge metadata, so you can set global context and add specific metadata per-call:
 
 ```ruby
